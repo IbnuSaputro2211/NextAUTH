@@ -1,103 +1,268 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+
+export default function LoginPage() {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === 'loading') return
+
+    // Redirect jika sudah login
+    if (session) {
+      if (session.user.role === 'admin') {
+        router.push('/dashboard/admin')
+      } else if (session.user.role === 'mahasiswa') {
+        router.push('/dashboard/mahasiswa')
+      } else if (session.user.role === 'dosen') {
+        router.push('/dashboard/dosen')
+      }
+    }
+  }, [session, status, router])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const result = await signIn('credentials', {
+        username,
+        password,
+        redirect: false
+      })
+
+      if (result?.error) {
+        setError('Username atau password salah')
+      } else if (result?.ok) {
+        // Tunggu session update, lalu redirect
+        window.location.reload()
+      }
+    } catch (error) {
+      setError('Terjadi kesalahan saat login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div style={{
+          color: '#ffffff',
+          fontSize: '1.2rem',
+          fontWeight: '500'
+        }}>Loading...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '1rem'
+    }}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        padding: '2.5rem',
+        borderRadius: '16px',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+        width: '420px',
+        maxWidth: '100%',
+        border: '1px solid rgba(255, 255, 255, 0.2)'
+      }}>
+        <h1 style={{
+          textAlign: 'center',
+          marginBottom: '2rem',
+          color: '#2d3748',
+          fontSize: '1.8rem',
+          fontWeight: '700',
+          letterSpacing: '-0.5px'
+        }}>
+          🎓 Login Sistem
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div style={{
+          marginBottom: '1.5rem',
+          padding: '1.2rem',
+          background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
+          borderRadius: '8px',
+          fontSize: '0.9rem',
+          border: '1px solid #e1bee7'
+        }}>
+          <h3 style={{ 
+            margin: '0 0 0.8rem 0',
+            color: '#4a148c',
+            fontSize: '1rem',
+            fontWeight: '600'
+          }}>
+            🔑 Akun Testing:
+          </h3>
+          <p style={{ 
+            margin: '0.4rem 0',
+            color: '#6a1b9a'
+          }}>
+            <strong style={{ color: '#4a148c' }}>Admin:</strong> 
+            <span style={{ color: '#1565c0', fontFamily: 'monospace' }}> admin / admin</span>
+          </p>
+          <p style={{ 
+            margin: '0.4rem 0',
+            color: '#6a1b9a'
+          }}>
+            <strong style={{ color: '#4a148c' }}>Mahasiswa:</strong> 
+            <span style={{ color: '#1565c0', fontFamily: 'monospace' }}> mhs / mhs</span>
+          </p>
+          <p style={{ 
+            margin: '0.4rem 0',
+            color: '#6a1b9a'
+          }}>
+            <strong style={{ color: '#4a148c' }}>Dosen:</strong> 
+            <span style={{ color: '#1565c0', fontFamily: 'monospace' }}> dosen / dosen</span>
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.2rem' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.6rem',
+              fontWeight: '600',
+              color: '#2d3748',
+              fontSize: '0.95rem'
+            }}>
+              👤 Username
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '0.9rem',
+                border: '2px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                boxSizing: 'border-box',
+                color: '#2d3748',
+                backgroundColor: '#f7fafc',
+                transition: 'all 0.2s ease',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#667eea'
+                e.target.style.backgroundColor = '#ffffff'
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#e2e8f0'
+                e.target.style.backgroundColor = '#f7fafc'
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '0.6rem',
+              fontWeight: '600',
+              color: '#2d3748',
+              fontSize: '0.95rem'
+            }}>
+              🔒 Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '0.9rem',
+                border: '2px solid #e2e8f0',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                boxSizing: 'border-box',
+                color: '#2d3748',
+                backgroundColor: '#f7fafc',
+                transition: 'all 0.2s ease',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#667eea'
+                e.target.style.backgroundColor = '#ffffff'
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#e2e8f0'
+                e.target.style.backgroundColor = '#f7fafc'
+              }}
+            />
+          </div>
+
+          {error && (
+            <div style={{
+              color: '#e53e3e',
+              marginBottom: '1.2rem',
+              padding: '0.8rem',
+              backgroundColor: '#fed7d7',
+              borderRadius: '8px',
+              textAlign: 'center',
+              border: '1px solid #feb2b2',
+              fontWeight: '500'
+            }}>
+              ❌ {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '0.9rem',
+              background: loading ? '#a0aec0' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
+              boxShadow: loading ? 'none' : '0 4px 12px rgba(102, 126, 234, 0.4)'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.target.style.transform = 'translateY(-1px)'
+                e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.5)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) {
+                e.target.style.transform = 'translateY(0)'
+                e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)'
+              }
+            }}
+          >
+            {loading ? '⏳ Loading...' : '🚀 Login'}
+          </button>
+        </form>
+      </div>
     </div>
-  );
+  )
 }
